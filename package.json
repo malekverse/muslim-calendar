@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "adhan": "^4.4.0",
+    "babel-preset-expo": "~57.0.0",
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.45.2",
     "expo": "~57.0.15",
