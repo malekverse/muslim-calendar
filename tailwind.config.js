@@ -23,6 +23,8 @@ module.exports = {
           strong: '#7CCFC0',
           dim: '#3E7A70',
         },
+        onAccent: '#0B0D10',
+        danger: '#C96A6A',
       },
       borderRadius: {
         card: '16px',
