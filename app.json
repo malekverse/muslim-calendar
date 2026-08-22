@@ -22,13 +22,20 @@
     "plugins": [
       "expo-router",
       [
+        "expo-calendar",
+        {
+          "calendarPermission": "AuraCal reads your calendar to place fixed events around prayer windows."
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "backgroundColor": "#0B0D10",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
-      ],
+      ]
+    ],
       "expo-sqlite"
     ],
     "experiments": {

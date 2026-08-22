@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { format } from 'date-fns'
 
+import type { ExternalEvent } from '@/core/calendar-store'
 import type { IqamahScheduleRow, LocationRow, RoutineRow } from '@/core/db/schema'
 import type {
   DayPrayerTimes,
@@ -24,17 +25,27 @@ export interface ResolvedRoutineBlock {
   end: Date
 }
 
+export interface HardBlock {
+  id: string
+  title: string
+  start: Date
+  end: Date
+}
+
 export interface DayScheduleInput {
   location: Pick<LocationRow, 'latitude' | 'longitude'> | null
   options: EngineOptions | null
   schedules: IqamahScheduleRow[]
   routines: RoutineRow[]
+  externalEvents?: ExternalEvent[]
 }
 
 export interface DayScheduleView {
   times: DayPrayerTimes
   windows: WaqtWindow[]
   blocks: ResolvedRoutineBlock[]
+  hardBlocks: HardBlock[]
+  allDayTitles: string[]
   upcoming: UpcomingPrayer
   now: Date
 }
@@ -105,12 +116,28 @@ export function computeDayView(input: DayScheduleInput, now: Date): DayScheduleV
   const midnight = new Date(now)
   midnight.setHours(0, 0, 0, 0)
 
+  const timed = (input.externalEvents ?? []).filter((event) => !event.isAllDay)
+  const hardBlocks: HardBlock[] = timed
+    .map((event) => ({
+      id: event.id,
+      title: event.title,
+      start: event.start < midnight ? midnight : event.start,
+      end: new Date(Math.min(event.end.getTime(), windows[4].end.getTime())),
+    }))
+    .filter((block) => block.end > block.start)
+    .sort((a, b) => a.start.getTime() - b.start.getTime())
+  const allDayTitles = (input.externalEvents ?? [])
+    .filter((event) => event.isAllDay)
+    .map((event) => event.title)
+
   return {
     times,
     windows,
     upcoming,
     now,
     blocks: resolveBlocks(input.routines, times, midnight, now.getDay()),
+    hardBlocks,
+    allDayTitles,
   }
 }
 
@@ -126,10 +153,18 @@ export function useNow(intervalMs = 30_000): Date {
 
 export function useDaySchedule(input: DayScheduleInput): DayScheduleView | null {
   const now = useNow()
-  const { location, options, schedules, routines } = input
+  const { location, options, schedules, routines, externalEvents } = input
   return useMemo(
-    () => computeDayView({ location, options, schedules, routines }, now),
+    () => computeDayView({ location, options, schedules, routines, externalEvents }, now),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [location?.latitude, location?.longitude, options, schedules, routines, now]
+    [
+      location?.latitude,
+      location?.longitude,
+      options,
+      schedules,
+      routines,
+      externalEvents,
+      now,
+    ]
   )
 }

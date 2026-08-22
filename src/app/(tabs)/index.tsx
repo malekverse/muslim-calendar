@@ -1,13 +1,15 @@
 import { router } from 'expo-router'
 import { Text, View } from 'react-native'
 
+import type { ExternalEvent } from '@/core/calendar-store'
 import type { EngineOptions } from '@/core/prayer-engine'
 import type { IqamahScheduleRow, LocationRow, RoutineRow } from '@/core/db/schema'
 import { DayView } from '@/features/day-view/components/DayView'
 import { useDaySchedule } from '@/features/day-view/hooks/use-day-schedule'
+import { useExternalEvents } from '@/features/day-view/hooks/use-external-events'
+import { useRoutinesStore } from '@/features/day-view/model/routines-store'
 import { useActiveLocation, useEngineOptions } from '@/features/settings/hooks/use-engine-options'
 import { useSettingsStore } from '@/features/settings/model/settings-store'
-import { useRoutinesStore } from '@/features/day-view/model/routines-store'
 import { Button } from '@/ui/Button'
 import { Loading } from '@/ui/Loading'
 
@@ -16,6 +18,7 @@ interface Wiring {
   options: EngineOptions | null
   schedules: IqamahScheduleRow[]
   routines: RoutineRow[]
+  externalEvents?: ExternalEvent[]
 }
 
 export default function TodayScreen() {
@@ -26,13 +29,17 @@ export default function TodayScreen() {
   const options = useEngineOptions()
   const schedules = useSettingsStore((s) => s.schedules)
   const hijriOffsetDays = useSettingsStore((s) => s.hijriOffsetDays)
+  const enabledCalendarIds = useSettingsStore((s) => s.enabledCalendarIds)
   const routines = useRoutinesStore((s) => s.routines)
+
+  const externalEvents = useExternalEvents(enabledCalendarIds, new Date())
 
   const view = useDaySchedule({
     location,
     options,
     schedules,
     routines,
+    externalEvents,
   } satisfies Wiring)
 
   if (!hydrated || !routinesLoaded) return <Loading />

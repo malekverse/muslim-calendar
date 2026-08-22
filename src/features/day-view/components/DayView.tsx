@@ -57,6 +57,12 @@ export function DayView({ view, hijriOffsetDays, schedules }: DayViewProps) {
         </View>
       </View>
 
+      {view.allDayTitles.length > 0 && (
+        <Text className="text-ink-faint mt-2 text-xs" numberOfLines={2}>
+          All day · {view.allDayTitles.join(', ')}
+        </Text>
+      )}
+
       <WaqtGrid view={view} onEditRoutine={openEdit} />
 
       <Button label="Add routine" variant="secondary" className="mt-3" onPress={openNew} />

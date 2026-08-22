@@ -1,5 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Alert, Pressable, ScrollView, Switch, Text, View } from 'react-native'
+
+import {
+  hasCalendarAccess,
+  listSources,
+  requestCalendarAccess,
+  type CalendarSource,
+} from '@/core/calendar-store'
 
 import {
   HIGH_LATITUDE_OPTIONS,
@@ -52,13 +59,33 @@ export function SettingsView() {
     hijriOffsetDays,
     prayerReminders,
     qiyamAlarm,
+    enabledCalendarIds,
     activateLocation,
     removeLocation,
     removeSchedule,
     setHijriOffset,
     setPrayerReminders,
     setQiyamAlarm,
+    toggleCalendarSource,
   } = useSettingsStore()
+
+  const [calendarAccess, setCalendarAccess] = useState<boolean | null>(null)
+  const [deviceCalendars, setDeviceCalendars] = useState<CalendarSource[]>([])
+
+  useEffect(() => {
+    void (async () => {
+      const granted = await hasCalendarAccess()
+      setCalendarAccess(granted)
+      if (granted) setDeviceCalendars(await listSources())
+    })()
+  }, [])
+
+  async function grantCalendar() {
+    if (await requestCalendarAccess()) {
+      setCalendarAccess(true)
+      setDeviceCalendars(await listSources())
+    }
+  }
 
   const [locationSheetOpen, setLocationSheetOpen] = useState(false)
   const [editingLocationId, setEditingLocationId] = useState<string | null>(null)
@@ -240,6 +267,42 @@ export function SettingsView() {
           />
         </View>
       </View>
+
+      <SectionLabel>Device calendars</SectionLabel>
+      {!calendarAccess ? (
+        <Button
+          label="Grant calendar access"
+          variant="secondary"
+          onPress={() => void grantCalendar()}
+        />
+      ) : deviceCalendars.length === 0 ? (
+        <Text className="text-ink-muted text-sm">No calendars found on this device.</Text>
+      ) : (
+        <>
+          {deviceCalendars.map((source) => {
+            const enabled = enabledCalendarIds.includes(source.id)
+            return (
+              <View
+                key={source.id}
+                className="border-hairline bg-surface flex-row items-center justify-between rounded-card border px-4 py-3.5"
+              >
+                <Text className="text-ink mr-4 flex-1" numberOfLines={1}>
+                  {source.title}
+                </Text>
+                <Switch
+                  value={enabled}
+                  onValueChange={() => void toggleCalendarSource(source.id)}
+                  trackColor={{ false: colors.hairline, true: colors.accent }}
+                  thumbColor={colors.ink}
+                />
+              </View>
+            )
+          })}
+          <Text className="text-ink-faint mt-2 text-xs leading-relaxed">
+            Selected calendars appear as fixed events on the waqt grid.
+          </Text>
+        </>
+      )}
 
       <SectionLabel>Hijri date</SectionLabel>
       <View className="border-hairline bg-surface items-center rounded-card border px-4 py-4">

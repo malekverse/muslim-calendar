@@ -30,7 +30,6 @@ export function WaqtGrid({ view, onEditRoutine }: WaqtGridProps) {
           Math.round((duration / totalMinutes) * GRID_BASE_HEIGHT)
         )
         const isNow = isWithinInterval(view.now, { start: window.start, end: window.end })
-        const blocks = view.blocks.filter((b) => b.start >= window.start && b.start < window.end)
         const elapsed = Math.min(
           100,
           Math.max(0, ((view.now.getTime() - window.start.getTime()) / (duration * 60_000)) * 100)
@@ -57,21 +56,41 @@ export function WaqtGrid({ view, onEditRoutine }: WaqtGridProps) {
             </View>
 
             <View className="mt-2 gap-1.5">
-              {blocks.map(({ routine, start }) => (
-                <Pressable
-                  key={routine.id}
-                  onPress={() => onEditRoutine(routine)}
-                  className="bg-raised flex-row items-center justify-between rounded-xl border border-hairline px-2.5 py-1.5"
-                  android_ripple={{ color: '#262C34' }}
-                >
-                  <Text className="text-ink text-xs" numberOfLines={1}>
-                    {routine.name}
-                  </Text>
-                  <Text className="text-ink-muted text-xs tabular-nums">
-                    {format(start, 'HH:mm')}
-                  </Text>
-                </Pressable>
-              ))}
+              {view.blocks
+                .filter((b) => b.start >= window.start && b.start < window.end)
+                .map(({ routine, start }) => (
+                  <Pressable
+                    key={routine.id}
+                    onPress={() => onEditRoutine(routine)}
+                    className="bg-raised flex-row items-center justify-between rounded-xl border border-hairline px-2.5 py-1.5"
+                    android_ripple={{ color: '#262C34' }}
+                  >
+                    <Text className="text-ink text-xs" numberOfLines={1}>
+                      {routine.name}
+                    </Text>
+                    <Text className="text-ink-muted text-xs tabular-nums">
+                      {format(start, 'HH:mm')}
+                    </Text>
+                  </Pressable>
+                ))}
+              {view.hardBlocks
+                .filter((event) => event.start < window.end && event.end > window.start)
+                .map((event) => (
+                  <View
+                    key={event.id}
+                    className="rounded-xl border border-dashed border-ink-faint/70 px-2.5 py-1.5"
+                  >
+                    <View className="flex-row items-center justify-between gap-2">
+                      <Text className="text-ink-muted flex-1 text-xs" numberOfLines={1}>
+                        {event.title}
+                      </Text>
+                      <Text className="text-ink-faint text-xs tabular-nums">
+                        {format(event.start, 'HH:mm')}
+                        {format(event.end, '–HH:mm')}
+                      </Text>
+                    </View>
+                  </View>
+                ))}
             </View>
 
             {isNow && (
