@@ -34,8 +34,8 @@ Expo and RN ecosystems move fast: **always check current APIs through the Contex
 Clean architecture with an enforced dependency direction:
 
 ```
-app/                  # expo-router routes — THIN screens only (compose, never compute)
 src/
+  app/                # expo-router routes — THIN screens only (compose, never compute)
   features/           # vertical slices, self-contained
     day-view/
     evening-ritual/

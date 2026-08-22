@@ -24,7 +24,7 @@ Positioning line: *Your calendar, finally in tune with your deen.* A layer over 
 
 | Stage | Ships | Value delivered | Status |
 | --- | --- | --- | --- |
-| M0 | Expo scaffold, theme tokens, navigation shell, prayer-engine core | Foundation | ☐ |
+| M0 | Expo scaffold, theme tokens, navigation shell, prayer-engine core | Foundation | ☑ |
 | M1 | Day view (waqt grid), location+method settings, local routines CRUD | Useful standalone app | ☐ |
 | M2 | Evening ritual screen, qiyam alarms, muhasabah check-ins, notifications | Daily-open loop | ☐ |
 | M3 | Device calendar read → overlay hard events on waqt grid | "It sees my life" | ☐ |
