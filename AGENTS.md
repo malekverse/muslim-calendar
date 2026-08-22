@@ -81,14 +81,14 @@ src/
 1. Read plan.md (active milestone) before any feature work. Ambiguity → ask, don't guess scope.
 2. Track multi-step work with the task list; keep statuses truthful.
 3. Place new code exactly where the architecture table says.
-4. Verify: `npx tsc --noEmit` and lint. Iterate until green.
+4. Verify: `npx tsc --noEmit`, `npm run lint`, `npm test`. Iterate until green.
 5. Commit small, message conventional. Push on milestone completion or when asked.
 6. Keep plan.md progress markers updated as milestones land.
 7. Never commit secrets, `node_modules`, or build output.
 
 ## Definition of done
 
-- [ ] `tsc` + lint green
+- [ ] `tsc` + lint + `npm test` green
 - [ ] Token-compliant styling (no raw values)
 - [ ] Loading / error / empty states handled
 - [ ] Dark mode correct (it is the default)
