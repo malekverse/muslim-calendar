@@ -1,28 +1,55 @@
-import { View, Text } from 'react-native'
-import { format } from 'date-fns'
+import { router } from 'expo-router'
+import { Text, View } from 'react-native'
 
-function hijriDate(date: Date): string {
-  return new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).format(date)
+import type { EngineOptions } from '@/core/prayer-engine'
+import type { IqamahScheduleRow, LocationRow, RoutineRow } from '@/core/db/schema'
+import { DayView } from '@/features/day-view/components/DayView'
+import { useDaySchedule } from '@/features/day-view/hooks/use-day-schedule'
+import { useActiveLocation, useEngineOptions } from '@/features/settings/hooks/use-engine-options'
+import { useSettingsStore } from '@/features/settings/model/settings-store'
+import { useRoutinesStore } from '@/features/day-view/model/routines-store'
+import { Button } from '@/ui/Button'
+import { Loading } from '@/ui/Loading'
+
+interface Wiring {
+  location: Pick<LocationRow, 'latitude' | 'longitude'> | null
+  options: EngineOptions | null
+  schedules: IqamahScheduleRow[]
+  routines: RoutineRow[]
 }
 
 export default function TodayScreen() {
-  const now = new Date()
-  return (
-    <View className="flex-1 bg-base px-5 pt-16">
-      <Text className="text-ink-muted text-sm">{format(now, 'EEEE, MMMM d')}</Text>
-      <Text className="text-ink mt-1 text-2xl font-semibold">
-        {hijriDate(now)}
-      </Text>
-      <View className="mt-8 rounded-card border border-hairline bg-surface p-4">
-        <Text className="text-ink text-base">No location set yet.</Text>
-        <Text className="text-ink-muted mt-1 text-sm">
-          Prayer times and the waqt grid appear once a location is configured in Settings.
+  const hydrated = useSettingsStore((s) => s.hydrated)
+  const routinesLoaded = useRoutinesStore((s) => s.loaded)
+
+  const location = useActiveLocation()
+  const options = useEngineOptions()
+  const schedules = useSettingsStore((s) => s.schedules)
+  const hijriOffsetDays = useSettingsStore((s) => s.hijriOffsetDays)
+  const routines = useRoutinesStore((s) => s.routines)
+
+  const view = useDaySchedule({
+    location,
+    options,
+    schedules,
+    routines,
+  } satisfies Wiring)
+
+  if (!hydrated || !routinesLoaded) return <Loading />
+
+  if (!view) {
+    return (
+      <View className="flex-1 items-center justify-center bg-base px-8">
+        <Text className="text-ink mb-2 text-center text-xl font-semibold">
+          Set your location to begin
         </Text>
+        <Text className="text-ink-muted mb-6 text-center leading-relaxed">
+          AuraCal computes prayer times on your device and organizes your day around them.
+        </Text>
+        <Button label="Open Settings" onPress={() => router.push('/(tabs)/settings')} />
       </View>
-    </View>
-  )
+    )
+  }
+
+  return <DayView view={view} hijriOffsetDays={hijriOffsetDays} schedules={schedules.map((s) => ({ id: s.id, masjidName: s.masjidName }))} />
 }
