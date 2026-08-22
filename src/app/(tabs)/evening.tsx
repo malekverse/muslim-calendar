@@ -1,10 +1,8 @@
-import { useEffect } from 'react'
 import { Text, View } from 'react-native'
 import { router } from 'expo-router'
 
 import { RitualView } from '@/features/evening-ritual/components/RitualView'
 import { useRitual } from '@/features/evening-ritual/hooks/use-ritual'
-import { refreshNotifications } from '@/features/evening-ritual/notify'
 import { useDaySchedule } from '@/features/day-view/hooks/use-day-schedule'
 import { useRoutinesStore } from '@/features/day-view/model/routines-store'
 import { useActiveLocation, useEngineOptions } from '@/features/settings/hooks/use-engine-options'
@@ -35,17 +33,6 @@ export default function EveningScreen() {
         start: b.start,
       })) ?? null,
   })
-
-  useEffect(() => {
-    if (!hydrated || !location) return
-    void refreshNotifications({
-      prayers: ritual.prayers,
-      qiyam: ritual.qiyam,
-      prayerReminders,
-      qiyamAlarm,
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, prayerReminders, qiyamAlarm, view?.upcoming.at.getTime()])
 
   if (!hydrated || !routinesLoaded) return <Loading />
 

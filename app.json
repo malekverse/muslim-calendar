@@ -27,6 +27,7 @@
           "calendarPermission": "AuraCal reads your calendar to place fixed events around prayer windows."
         }
       ],
+      "expo-sqlite",
       [
         "expo-splash-screen",
         {
@@ -35,8 +36,6 @@
           "imageWidth": 76
         }
       ]
-    ],
-      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true

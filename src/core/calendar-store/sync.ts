@@ -37,29 +37,35 @@ export async function syncRoutineCalendar(
   input: DayScheduleInput
 ): Promise<'synced' | 'no-access' | 'skipped'> {
   if (!input.location || !input.options || input.routines.length === 0) return 'skipped'
-  if (!(await requestCalendarAccess())) return 'no-access'
 
-  const calendars = await Calendar.getCalendars(Calendar.EntityTypes.EVENT)
-  for (const calendar of calendars) {
-    if (calendar.title === AURACAL_CALENDAR_TITLE) {
-      await calendar.delete()
+  try {
+    if (!(await requestCalendarAccess())) return 'no-access'
+
+    const calendars = await Calendar.getCalendars(Calendar.EntityTypes.EVENT)
+    for (const calendar of calendars) {
+      if (calendar.title === AURACAL_CALENDAR_TITLE) {
+        await calendar.delete()
+      }
     }
-  }
 
-  const auraCal = await Calendar.createCalendar({
-    title: AURACAL_CALENDAR_TITLE,
-    color: '#5FB3A3',
-    entityType: Calendar.EntityTypes.EVENT,
-  })
-
-  for (const occurrence of projectOccurrences(input, 7)) {
-    await auraCal.createEvent({
-      title: occurrence.title,
-      startDate: occurrence.start,
-      endDate: occurrence.end,
-      allDay: false,
-      notes: 'Scheduled by AuraCal',
+    const auraCal = await Calendar.createCalendar({
+      title: AURACAL_CALENDAR_TITLE,
+      color: '#5FB3A3',
+      entityType: Calendar.EntityTypes.EVENT,
     })
+
+    for (const occurrence of projectOccurrences(input, 7)) {
+      await auraCal.createEvent({
+        title: occurrence.title,
+        startDate: occurrence.start,
+        endDate: occurrence.end,
+        allDay: false,
+        notes: 'Scheduled by AuraCal',
+      })
+    }
+  } catch {
+    // Provider quirks must never take down the app; the grid remains the source of truth.
+    return 'skipped'
   }
 
   return 'synced'

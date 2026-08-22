@@ -6,44 +6,58 @@ import {
   scheduleOneShot,
 } from '@/core/notifications'
 import { PRAYER_LABELS } from '@/core/config'
-import type { PrayerKey } from '@/core/prayer-engine'
+import type { DayPrayerTimes, PrayerKey } from '@/core/prayer-engine'
+
+export interface NotificationPrayerRow {
+  key: PrayerKey
+  time: Date
+}
+
+/** Today's five congregation-ordered prayers from resolved times. */
+export function jamaatRows(times: DayPrayerTimes): NotificationPrayerRow[] {
+  return (['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'] as const).map((key) => ({
+    key,
+    time: times[key],
+  }))
+}
 
 interface NotificationRefreshInput {
-  prayers: { key: PrayerKey; time: Date }[]
+  prayers: NotificationPrayerRow[]
   qiyam: { start: Date; end: Date } | null
   prayerReminders: boolean
   qiyamAlarm: boolean
 }
 
-/**
- * Rebuilds the local notification set for the current day.
- * Called on ritual screen mount and whenever prefs or times change.
- */
+/** Rebuilds the local notification set; failures must never crash the app. */
 export async function refreshNotifications(input: NotificationRefreshInput): Promise<void> {
-  if (!input.prayerReminders && !input.qiyamAlarm) {
+  try {
+    if (!input.prayerReminders && !input.qiyamAlarm) {
+      await cancelAllScheduled()
+      return
+    }
+    const granted = await ensureNotificationPermission()
+    if (!granted) return
+
     await cancelAllScheduled()
-    return
-  }
-  const granted = await ensureNotificationPermission()
-  if (!granted) return
 
-  await cancelAllScheduled()
+    if (input.prayerReminders) {
+      for (const prayer of input.prayers) {
+        await scheduleOneShot(
+          prayer.time,
+          PRAYER_LABELS[prayer.key],
+          `It's time for ${PRAYER_LABELS[prayer.key]}.`
+        )
+      }
+    }
 
-  if (input.prayerReminders) {
-    for (const prayer of input.prayers) {
+    if (input.qiyamAlarm && input.qiyam) {
       await scheduleOneShot(
-        prayer.time,
-        PRAYER_LABELS[prayer.key],
-        `It's time for ${PRAYER_LABELS[prayer.key]}.`
+        input.qiyam.start,
+        'Qiyam window is open',
+        `The last third of the night began at ${format(input.qiyam.start, 'HH:mm')}.`
       )
     }
-  }
-
-  if (input.qiyamAlarm && input.qiyam) {
-    await scheduleOneShot(
-      input.qiyam.start,
-      'Qiyam window is open',
-      `The last third of the night began at ${format(input.qiyam.start, 'HH:mm')}.`
-    )
+  } catch {
+    // Notifications are best-effort; never block startup.
   }
 }

@@ -25,6 +25,9 @@ export function Button({ label, variant = 'primary', disabled, className = '', .
   return (
     <Pressable
       disabled={disabled}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled: !!disabled }}
       className={`h-11 items-center justify-center rounded-card px-4 ${SHELL[variant]} ${
         disabled ? 'opacity-50' : ''
       } ${className}`}

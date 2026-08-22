@@ -51,31 +51,39 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   writebackEnabled: false,
 
   init: async () => {
-    await initDatabase()
-    const [locations, schedules] = await Promise.all([repo.listLocations(), repo.listSchedules()])
-    const storedActive = await repo.getSetting<string>('activeLocationId')
-    const offset = (await repo.getSetting<number>('hijriOffsetDays')) ?? 0
-    const prayerReminders = (await repo.getSetting<boolean>('prayerReminders')) ?? false
-    const qiyamAlarm = (await repo.getSetting<boolean>('qiyamAlarm')) ?? false
-    const enabledCalendarIds = (await repo.getSetting<string[]>('enabledCalendarIds')) ?? []
-    const writebackEnabled = (await repo.getSetting<boolean>('writebackEnabled')) ?? false
+    try {
+      await initDatabase()
+      const [locations, schedules] = await Promise.all([
+        repo.listLocations(),
+        repo.listSchedules(),
+      ])
+      const storedActive = await repo.getSetting<string>('activeLocationId')
+      const offset = (await repo.getSetting<number>('hijriOffsetDays')) ?? 0
+      const prayerReminders = (await repo.getSetting<boolean>('prayerReminders')) ?? false
+      const qiyamAlarm = (await repo.getSetting<boolean>('qiyamAlarm')) ?? false
+      const enabledCalendarIds = (await repo.getSetting<string[]>('enabledCalendarIds')) ?? []
+      const writebackEnabled = (await repo.getSetting<boolean>('writebackEnabled')) ?? false
 
-    let activeLocationId = storedActive ?? null
-    if (!activeLocationId || !locations.some((l) => l.id === activeLocationId)) {
-      activeLocationId = locations.find((l) => l.isDefault)?.id ?? locations[0]?.id ?? null
+      let activeLocationId = storedActive ?? null
+      if (!activeLocationId || !locations.some((l) => l.id === activeLocationId)) {
+        activeLocationId = locations.find((l) => l.isDefault)?.id ?? locations[0]?.id ?? null
+      }
+
+      set({
+        locations,
+        schedules,
+        activeLocationId,
+        hijriOffsetDays: offset,
+        prayerReminders,
+        qiyamAlarm,
+        enabledCalendarIds,
+        writebackEnabled,
+        hydrated: true,
+      })
+    } catch {
+      // A broken store must not brick the app; degrade to a fresh-install state.
+      set({ hydrated: true })
     }
-
-    set({
-      locations,
-      schedules,
-      activeLocationId,
-      hijriOffsetDays: offset,
-      prayerReminders,
-      qiyamAlarm,
-      enabledCalendarIds,
-      writebackEnabled,
-      hydrated: true,
-    })
   },
 
   addLocation: async (input) => {

@@ -1,5 +1,6 @@
 import { Pressable, ScrollView, Switch, Text, View } from 'react-native'
 import { format } from 'date-fns'
+import * as Haptics from 'expo-haptics'
 
 import { PRAYER_LABELS } from '@/core/config'
 import type { PrayerKey } from '@/core/prayer-engine'
@@ -41,7 +42,12 @@ function StatusButtons({
   return (
     <View className="flex-row gap-1.5">
       <Pressable
-        onPress={() => onPress(status === 'done' ? null : 'done')}
+        accessibilityRole="button"
+        accessibilityLabel="Mark done"
+        onPress={() => {
+          void Haptics.selectionAsync()
+          onPress(status === 'done' ? null : 'done')
+        }}
         className={`h-8 w-8 items-center justify-center rounded-full border ${
           status === 'done' ? 'border-accent bg-accent/15' : 'border-hairline'
         }`}
@@ -49,7 +55,12 @@ function StatusButtons({
         <Text className={status === 'done' ? 'text-accent' : 'text-ink-faint'}>✓</Text>
       </Pressable>
       <Pressable
-        onPress={() => onPress(status === 'missed' ? null : 'missed')}
+        accessibilityRole="button"
+        accessibilityLabel="Mark missed"
+        onPress={() => {
+          void Haptics.selectionAsync()
+          onPress(status === 'missed' ? null : 'missed')
+        }}
         className={`h-8 w-8 items-center justify-center rounded-full border ${
           status === 'missed' ? 'border-danger bg-danger/15' : 'border-hairline'
         }`}

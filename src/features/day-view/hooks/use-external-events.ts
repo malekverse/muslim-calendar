@@ -20,14 +20,18 @@ export function useExternalEvents(enabledCalendarIds: string[], now: Date): Exte
         if (!cancelled) setEvents([])
         return
       }
-      if (!(await hasCalendarAccess())) return
-      const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-      const fetched = await listEventsForRange(
-        enabledCalendarIds,
-        dayStart,
-        new Date(dayStart.getTime() + DAY_MS)
-      )
-      if (!cancelled) setEvents(fetched)
+      try {
+        if (!(await hasCalendarAccess())) return
+        const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+        const fetched = await listEventsForRange(
+          enabledCalendarIds,
+          dayStart,
+          new Date(dayStart.getTime() + DAY_MS)
+        )
+        if (!cancelled) setEvents(fetched)
+      } catch {
+        // Calendar providers can fail transiently; the grid simply shows routines.
+      }
     })()
     return () => {
       cancelled = true
