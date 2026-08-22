@@ -21,6 +21,8 @@ interface SettingsState {
   schedules: IqamahScheduleRow[]
   activeLocationId: string | null
   hijriOffsetDays: number
+  prayerReminders: boolean
+  qiyamAlarm: boolean
   init: () => Promise<void>
   addLocation: (input: NewLocationInput) => Promise<void>
   editLocation: (id: string, patch: Partial<NewLocationInput>) => Promise<void>
@@ -29,6 +31,8 @@ interface SettingsState {
   upsertSchedule: (row: IqamahScheduleRow) => Promise<void>
   removeSchedule: (id: string) => Promise<void>
   setHijriOffset: (days: number) => Promise<void>
+  setPrayerReminders: (enabled: boolean) => Promise<void>
+  setQiyamAlarm: (enabled: boolean) => Promise<void>
 }
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
@@ -37,19 +41,31 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   schedules: [],
   activeLocationId: null,
   hijriOffsetDays: 0,
+  prayerReminders: false,
+  qiyamAlarm: false,
 
   init: async () => {
     await initDatabase()
     const [locations, schedules] = await Promise.all([repo.listLocations(), repo.listSchedules()])
     const storedActive = await repo.getSetting<string>('activeLocationId')
     const offset = (await repo.getSetting<number>('hijriOffsetDays')) ?? 0
+    const prayerReminders = (await repo.getSetting<boolean>('prayerReminders')) ?? false
+    const qiyamAlarm = (await repo.getSetting<boolean>('qiyamAlarm')) ?? false
 
     let activeLocationId = storedActive ?? null
     if (!activeLocationId || !locations.some((l) => l.id === activeLocationId)) {
       activeLocationId = locations.find((l) => l.isDefault)?.id ?? locations[0]?.id ?? null
     }
 
-    set({ locations, schedules, activeLocationId, hijriOffsetDays: offset, hydrated: true })
+    set({
+      locations,
+      schedules,
+      activeLocationId,
+      hijriOffsetDays: offset,
+      prayerReminders,
+      qiyamAlarm,
+      hydrated: true,
+    })
   },
 
   addLocation: async (input) => {
@@ -109,5 +125,15 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   setHijriOffset: async (days) => {
     await repo.setSetting('hijriOffsetDays', days)
     set({ hijriOffsetDays: days })
+  },
+
+  setPrayerReminders: async (enabled) => {
+    await repo.setSetting('prayerReminders', enabled)
+    set({ prayerReminders: enabled })
+  },
+
+  setQiyamAlarm: async (enabled) => {
+    await repo.setSetting('qiyamAlarm', enabled)
+    set({ qiyamAlarm: enabled })
   },
 }))

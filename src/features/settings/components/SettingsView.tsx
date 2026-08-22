@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native'
+import { Alert, Pressable, ScrollView, Switch, Text, View } from 'react-native'
 
 import {
   HIGH_LATITUDE_OPTIONS,
@@ -10,6 +10,7 @@ import {
 import type { HighLatitudeRuleName, MadhabName, MethodKey } from '@/core/prayer-engine'
 import { formatHijri } from '@/core/hijri'
 import { Button } from '@/ui/Button'
+import { colors } from '@/ui/theme'
 
 import { LocationFormSheet } from './LocationFormSheet'
 import { OptionPickerSheet } from './OptionPickerSheet'
@@ -49,10 +50,14 @@ export function SettingsView() {
     schedules,
     activeLocationId,
     hijriOffsetDays,
+    prayerReminders,
+    qiyamAlarm,
     activateLocation,
     removeLocation,
     removeSchedule,
     setHijriOffset,
+    setPrayerReminders,
+    setQiyamAlarm,
   } = useSettingsStore()
 
   const [locationSheetOpen, setLocationSheetOpen] = useState(false)
@@ -213,6 +218,28 @@ export function SettingsView() {
         className="mt-2"
         onPress={() => setScheduleSheetOpen(true)}
       />
+
+      <SectionLabel>Notifications</SectionLabel>
+      <View className="gap-2">
+        <View className="border-hairline bg-surface flex-row items-center justify-between rounded-card border px-4 py-3.5">
+          <Text className="text-ink mr-4 flex-1">Prayer reminders</Text>
+          <Switch
+            value={prayerReminders}
+            onValueChange={(v) => void setPrayerReminders(v)}
+            trackColor={{ false: colors.hairline, true: colors.accent }}
+            thumbColor={colors.ink}
+          />
+        </View>
+        <View className="border-hairline bg-surface flex-row items-center justify-between rounded-card border px-4 py-3.5">
+          <Text className="text-ink mr-4 flex-1">Qiyam alarm</Text>
+          <Switch
+            value={qiyamAlarm}
+            onValueChange={(v) => void setQiyamAlarm(v)}
+            trackColor={{ false: colors.hairline, true: colors.accent }}
+            thumbColor={colors.ink}
+          />
+        </View>
+      </View>
 
       <SectionLabel>Hijri date</SectionLabel>
       <View className="border-hairline bg-surface items-center rounded-card border px-4 py-4">

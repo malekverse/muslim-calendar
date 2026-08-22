@@ -3,6 +3,7 @@ import * as Crypto from 'expo-crypto'
 
 import { db } from './client'
 import {
+  completions,
   iqamahSchedules,
   locations,
   routines,
@@ -76,4 +77,33 @@ export async function setSetting(key: string, value: unknown): Promise<void> {
     .insert(settings)
     .values({ key, value: JSON.stringify(value) })
     .onConflictDoUpdate({ target: settings.key, set: { value: JSON.stringify(value) } })
+}
+
+export type CompletionKey = { date: string; refType: 'routine' | 'prayer'; refId: string }
+
+export const listCompletionsByDate = (date: string) =>
+  db.select().from(completions).where(eq(completions.date, date))
+
+async function findCompletion(key: CompletionKey) {
+  const rows = await db.select().from(completions).where(eq(completions.date, key.date))
+  return rows.find((r) => r.refType === key.refType && r.refId === key.refId)
+}
+
+export async function setCompletion(
+  key: CompletionKey,
+  status: 'done' | 'missed' | 'skipped'
+): Promise<void> {
+  const existing = await findCompletion(key)
+  if (existing) {
+    await db.update(completions).set({ status }).where(eq(completions.id, existing.id))
+  } else {
+    await db.insert(completions).values({ ...key, id: newId(), status })
+  }
+}
+
+export async function clearCompletion(key: CompletionKey): Promise<void> {
+  const existing = await findCompletion(key)
+  if (existing) {
+    await db.delete(completions).where(eq(completions.id, existing.id))
+  }
 }
