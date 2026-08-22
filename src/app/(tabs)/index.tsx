@@ -1,7 +1,9 @@
+import { useEffect } from 'react'
 import { router } from 'expo-router'
 import { Text, View } from 'react-native'
 
 import type { ExternalEvent } from '@/core/calendar-store'
+import { syncRoutineCalendar } from '@/core/calendar-store'
 import type { EngineOptions } from '@/core/prayer-engine'
 import type { IqamahScheduleRow, LocationRow, RoutineRow } from '@/core/db/schema'
 import { DayView } from '@/features/day-view/components/DayView'
@@ -30,6 +32,7 @@ export default function TodayScreen() {
   const schedules = useSettingsStore((s) => s.schedules)
   const hijriOffsetDays = useSettingsStore((s) => s.hijriOffsetDays)
   const enabledCalendarIds = useSettingsStore((s) => s.enabledCalendarIds)
+  const writebackEnabled = useSettingsStore((s) => s.writebackEnabled)
   const routines = useRoutinesStore((s) => s.routines)
 
   const externalEvents = useExternalEvents(enabledCalendarIds, new Date())
@@ -41,6 +44,12 @@ export default function TodayScreen() {
     routines,
     externalEvents,
   } satisfies Wiring)
+
+  useEffect(() => {
+    if (!writebackEnabled || !view) return
+    void syncRoutineCalendar({ location, options, schedules, routines })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [writebackEnabled, routines.length, view?.times.fajr.getTime()])
 
   if (!hydrated || !routinesLoaded) return <Loading />
 

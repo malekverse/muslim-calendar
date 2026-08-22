@@ -60,6 +60,7 @@ export function SettingsView() {
     prayerReminders,
     qiyamAlarm,
     enabledCalendarIds,
+    writebackEnabled,
     activateLocation,
     removeLocation,
     removeSchedule,
@@ -67,6 +68,7 @@ export function SettingsView() {
     setPrayerReminders,
     setQiyamAlarm,
     toggleCalendarSource,
+    setWritebackEnabled,
   } = useSettingsStore()
 
   const [calendarAccess, setCalendarAccess] = useState<boolean | null>(null)
@@ -301,6 +303,21 @@ export function SettingsView() {
           <Text className="text-ink-faint mt-2 text-xs leading-relaxed">
             Selected calendars appear as fixed events on the waqt grid.
           </Text>
+          <View className="border-hairline bg-surface mt-2 flex-row items-center justify-between rounded-card border px-4 py-3.5">
+            <View className="mr-4 flex-1">
+              <Text className="text-ink">Mirror routines to my calendar</Text>
+              <Text className="text-ink-faint mt-0.5 text-xs leading-relaxed">
+                Writes the next 7 days into an &quot;AuraCal&quot; calendar; your Google/Apple
+                account syncs it everywhere.
+              </Text>
+            </View>
+            <Switch
+              value={writebackEnabled}
+              onValueChange={(v) => void setWritebackEnabled(v)}
+              trackColor={{ false: colors.hairline, true: colors.accent }}
+              thumbColor={colors.ink}
+            />
+          </View>
         </>
       )}
 

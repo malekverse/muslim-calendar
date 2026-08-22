@@ -28,7 +28,9 @@ Positioning line: *Your calendar, finally in tune with your deen.* A layer over 
 | M1 | Day view (waqt grid), location+method settings, local routines CRUD | Useful standalone app | ☑ |
 | M2 | Evening ritual screen, qiyam alarms, muhasabah check-ins, notifications | Daily-open loop | ☑ |
 | M3 | Device calendar read → overlay hard events on waqt grid | "It sees my life" | ☑ |
-| M4 | Write anchored routines back to device calendar; polish; TestFlight beta | Full loop closed | ☐ |
+| M4 | Write anchored routines back to device calendar; polish; TestFlight beta | Full loop closed | ☑ |
+
+> M4 note: write-back ships as an opt-in rolling **7-day projection** into an AuraCal-owned device calendar (rebuilt on each sync — prayer-anchored times drift daily, static recurring events would lie). Store distribution (TestFlight/Play) requires an Apple Developer account and `eas login` — documented in README.
 
 V0 success test: **10 real users from a local masjid use it daily for 2 weeks via TestFlight.**
 

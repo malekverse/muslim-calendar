@@ -11,11 +11,29 @@ Built for diaspora Muslims who structure life around Fajr, not 9 AM.
 
 ## Status
 
-`V0 — scaffolding`
+`V0 — feature-complete (M0–M4). TestFlight/Play beta pending store setup.`
 
 ## Development
 
 ```bash
-npx expo start          # run dev server
-npx tsc --noEmit        # typecheck (must pass before any commit)
+npm install
+npx expo start          # Expo Go works for everything except calendar features
+npx tsc --noEmit        # typecheck — must pass before any commit
+npm run lint
 ```
+
+**Calendar read/write requires a development build** (`expo-calendar` is unsupported in Expo Go since SDK 54):
+
+```bash
+npx expo run:android    # local dev build
+npx expo run:ios
+```
+
+## Builds
+
+```bash
+eas build -p android --profile preview   # internal APK
+eas build -p ios --profile production    # App Store / TestFlight
+```
+
+Configure `eas.json` profiles and `eas login` first.

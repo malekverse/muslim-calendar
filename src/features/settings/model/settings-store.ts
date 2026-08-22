@@ -24,6 +24,7 @@ interface SettingsState {
   prayerReminders: boolean
   qiyamAlarm: boolean
   enabledCalendarIds: string[]
+  writebackEnabled: boolean
   init: () => Promise<void>
   addLocation: (input: NewLocationInput) => Promise<void>
   editLocation: (id: string, patch: Partial<NewLocationInput>) => Promise<void>
@@ -35,6 +36,7 @@ interface SettingsState {
   setPrayerReminders: (enabled: boolean) => Promise<void>
   setQiyamAlarm: (enabled: boolean) => Promise<void>
   toggleCalendarSource: (id: string) => Promise<void>
+  setWritebackEnabled: (enabled: boolean) => Promise<void>
 }
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
@@ -46,6 +48,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   prayerReminders: false,
   qiyamAlarm: false,
   enabledCalendarIds: [],
+  writebackEnabled: false,
 
   init: async () => {
     await initDatabase()
@@ -55,6 +58,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     const prayerReminders = (await repo.getSetting<boolean>('prayerReminders')) ?? false
     const qiyamAlarm = (await repo.getSetting<boolean>('qiyamAlarm')) ?? false
     const enabledCalendarIds = (await repo.getSetting<string[]>('enabledCalendarIds')) ?? []
+    const writebackEnabled = (await repo.getSetting<boolean>('writebackEnabled')) ?? false
 
     let activeLocationId = storedActive ?? null
     if (!activeLocationId || !locations.some((l) => l.id === activeLocationId)) {
@@ -69,6 +73,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       prayerReminders,
       qiyamAlarm,
       enabledCalendarIds,
+      writebackEnabled,
       hydrated: true,
     })
   },
@@ -147,5 +152,10 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     const next = current.includes(id) ? current.filter((x) => x !== id) : [...current, id]
     await repo.setSetting('enabledCalendarIds', next)
     set({ enabledCalendarIds: next })
+  },
+
+  setWritebackEnabled: async (enabled) => {
+    await repo.setSetting('writebackEnabled', enabled)
+    set({ writebackEnabled: enabled })
   },
 }))
