@@ -7,6 +7,8 @@ export const colors = {
   inkMuted: '#9BA4AF',
   inkFaint: '#626B76',
   accent: '#5FB3A3',
+  onAccent: '#0B0D10',
+  danger: '#C96A6A',
 } as const
 
 export const navColors = {
