@@ -61,6 +61,7 @@ src/
 ## Domain rules (non-negotiable)
 
 1. Prayer times are **always computed locally** with `adhan-js`. No network requests for prayer data, ever. This is also the privacy promise.
+   - Verified: `adhan-js` returns absolute instants independent of the input Date's timezone frame (same calendar day in any offset yields identical results). Pass ordinary device-local dates.
 2. **Anchor precedence:** user's masjid iqamah schedule > calculated adhan time. Muslims schedule around congregation times, not astronomy.
 3. **High-latitude safety:** every location carries a `HighLatitudeRule` (middle of the night / seventh of the night / twilight angle). Times must resolve for Helsinki as correctly as for Cairo. Never return null or crash.
 4. **Hijri dates** come from system calendar APIs plus a user-adjustable ±2-day offset (local moon-sighting override). Never hardcode offsets.
